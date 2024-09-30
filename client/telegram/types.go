@@ -12,16 +12,19 @@ type UpdateResponse struct {
 	Result []Update `json:"result"`
 }
 
+// structure of incoming message
 type IncomingMessage struct {
 	Text string `json:"text"`
 	From From   `json:"from"`
 	Chat Chat   `json:"chat"`
 }
 
+// user who sent this message (TG API)
 type From struct {
 	Username string `json:"username"`
 }
 
+// conversations the message belongs to (TG API)
 type Chat struct {
 	ID int `json:"id"`
 }
