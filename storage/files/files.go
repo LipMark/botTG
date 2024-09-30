@@ -17,12 +17,12 @@ type Storage struct {
 	basePath string
 }
 
-// func NewPath creates a new storage with given path
+// NewPath creates a new storage with given path.
 func NewPath(basePath string) Storage {
 	return Storage{basePath: basePath}
 }
 
-// func Save adds page to storage
+// Save adds page to storage.
 func (s Storage) Save(page *storage.Page) (err error) {
 	defer func() {
 		if err != nil {
@@ -57,7 +57,7 @@ func (s Storage) Save(page *storage.Page) (err error) {
 	return nil
 }
 
-// func PickRandom returns a random page from the vault.
+// PickRandom returns a random page from the vault.
 func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 	defer func() {
 		if err != nil {
@@ -81,7 +81,7 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 	return s.decodePage(filepath.Join(path, file.Name()))
 }
 
-// func Remove is used to remove an existing storage page.
+// Remove is used to remove an existing storage page.
 func (s Storage) Remove(p *storage.Page) error {
 	fileName, err := fileName(p)
 	if err != nil {
@@ -99,7 +99,7 @@ func (s Storage) Remove(p *storage.Page) error {
 	return nil
 }
 
-// func IsExists check the existence of requested page
+// IsExists check the existence of requested page.
 func (s Storage) IsExists(p *storage.Page) (bool, error) {
 	fileName, err := fileName(p)
 	if err != nil {
@@ -120,7 +120,7 @@ func (s Storage) IsExists(p *storage.Page) (bool, error) {
 	return true, nil
 }
 
-// func decodePage decoding a page using gob Decoder
+// decodePage decoding a page using gob Decoder.
 func (s Storage) decodePage(filePath string) (*storage.Page, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -137,7 +137,7 @@ func (s Storage) decodePage(filePath string) (*storage.Page, error) {
 	return &page, nil
 }
 
-// func fileName receives page and returns a new file name.
+// fileName receives page and returns a new file name.
 func fileName(p *storage.Page) (string, error) {
 	return p.Hash()
 }

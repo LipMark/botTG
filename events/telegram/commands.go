@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -53,7 +54,7 @@ func (d *Dispatcher) savePage(chatID int, pageURL string, username string) (err 
 		UserName: username,
 	}
 
-	isExists, err := d.storage.IsExists(page)
+	isExists, err := d.storage.IsExists(context.Background(), page)
 	if err != nil {
 		return err
 	}
@@ -61,7 +62,7 @@ func (d *Dispatcher) savePage(chatID int, pageURL string, username string) (err 
 		return d.tg.SendMessage(chatID, msgAlreadyExists)
 	}
 
-	if err := d.storage.Save(page); err != nil {
+	if err := d.storage.Save(context.Background(), page); err != nil {
 		return err
 	}
 
@@ -80,7 +81,7 @@ func (d *Dispatcher) sendRandom(chatID int, username string) (err error) {
 		}
 	}()
 
-	page, err := d.storage.PickRandom(username)
+	page, err := d.storage.PickRandom(context.Background(), username)
 	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
 		return err
 	}
@@ -92,7 +93,7 @@ func (d *Dispatcher) sendRandom(chatID int, username string) (err error) {
 		return err
 	}
 
-	return d.storage.Remove(page)
+	return d.storage.Remove(context.Background(), page)
 }
 
 // func sendHelp is used by user to get a list of bot commands

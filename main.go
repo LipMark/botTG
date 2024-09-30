@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -8,9 +9,10 @@ import (
 	"TGBot/config"
 	"TGBot/consumer/eventconsumer"
 	"TGBot/events/telegram"
-	"TGBot/storage/files"
+	"TGBot/storage/sqlite"
 
 	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // loads values from .env into the system
@@ -26,16 +28,27 @@ func main() {
 	if !exists {
 		log.Fatalf("failed to retrieve TG host")
 	}
-	storagePath, exists := os.LookupEnv("STORAGE")
+	storagePath, exists := os.LookupEnv("SQLSTORAGE")
 	if !exists {
 		log.Fatalf("failed to retrieve storage path")
 	}
-	storage := files.NewPath(storagePath)
-	tgClient := telegramclient.NewClient(host, cfg.TgBotToken)
-	eventsProccesor := telegram.NewDispatcher(tgClient, storage)
+	//storage := files.NewPath(storagePath)
+	storage, err := sqlite.NewStorage(storagePath)
+	if err != nil {
+		log.Fatal("can't connect to storage %w", err)
+	}
+
+	storage.Init(context.Background())
+	if err != nil {
+		log.Fatal("context init troubles %w", err)
+	}
+
+	eventsDispatcher := telegram.NewDispatcher(
+		telegramclient.NewClient(host, cfg.TgBotToken),
+		storage)
 
 	log.Print("service started")
-	consumer := eventconsumer.NewConsumer(eventsProccesor, eventsProccesor, 100)
+	consumer := eventconsumer.NewConsumer(eventsDispatcher, eventsDispatcher, 100)
 
 	if err := consumer.Start(); err != nil {
 		log.Fatal("service is stopped", err)
