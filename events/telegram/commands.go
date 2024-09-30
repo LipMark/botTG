@@ -10,6 +10,8 @@ import (
 	"TGBot/storage"
 )
 
+// TODO :closures5
+
 const (
 	RndCmd   = "/rnd"
 	HelpCmd  = "/help"

@@ -1,11 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
-	"TGBot/client/telegram"
+	"TGBot/client/telegramclient"
+	"TGBot/config"
+	"TGBot/consumer/eventconsumer"
+	"TGBot/events/telegram"
+	"TGBot/storage/files"
 
 	"github.com/joho/godotenv"
 )
@@ -18,14 +21,24 @@ func init() {
 }
 
 func main() {
-	token, exists := os.LookupEnv("TGTOKEN")
-	if !exists {
-		log.Fatalf("failed to retrieve TG token")
-	}
+	cfg := config.MustLoad()
 	host, exists := os.LookupEnv("TGHOST")
 	if !exists {
 		log.Fatalf("failed to retrieve TG host")
 	}
-	tgClient := telegram.NewClient(host, token)
-	fmt.Println(tgClient)
+	storagePath, exists := os.LookupEnv("STORAGE")
+	if !exists {
+		log.Fatalf("failed to retrieve storage path")
+	}
+	storage := files.NewPath(storagePath)
+	tgClient := telegramclient.NewClient(host, cfg.TgBotToken)
+	eventsProccesor := telegram.NewDispatcher(tgClient, storage)
+
+	log.Print("service started")
+	consumer := eventconsumer.NewConsumer(eventsProccesor, eventsProccesor, 100)
+
+	if err := consumer.Start(); err != nil {
+		log.Fatal("service is stopped", err)
+	}
+
 }

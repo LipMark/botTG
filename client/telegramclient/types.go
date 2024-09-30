@@ -1,4 +1,4 @@
-package telegram
+package telegramclient
 
 // structure of telegram API getUpdates chapter "getting updates"
 type Update struct {

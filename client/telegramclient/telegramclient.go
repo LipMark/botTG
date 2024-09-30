@@ -1,4 +1,4 @@
-package telegram
+package telegramclient
 
 import (
 	"encoding/json"
@@ -22,8 +22,8 @@ type Client struct {
 }
 
 // NewClient creates a new user client
-func NewClient(host string, token string) Client {
-	return Client{
+func NewClient(host string, token string) *Client {
+	return &Client{
 		host:     host,
 		basePath: "bot" + token,
 		client:   http.Client{},

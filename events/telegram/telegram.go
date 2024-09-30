@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"TGBot/client/telegram"
+	"TGBot/client/telegramclient"
 	"TGBot/events"
 	"TGBot/storage"
 )
 
 type Dispatcher struct {
-	tg      *telegram.Client
+	tg      *telegramclient.Client
 	offset  int
 	storage storage.Storage
 }
@@ -26,7 +26,7 @@ var (
 	ErrUnknownMetaType  = errors.New("unknown meta type")
 )
 
-func newDispatcher(client *telegram.Client, storage storage.Storage) *Dispatcher {
+func NewDispatcher(client *telegramclient.Client, storage storage.Storage) *Dispatcher {
 	return &Dispatcher{
 		tg:      client,
 		storage: storage,
@@ -37,6 +37,10 @@ func (d *Dispatcher) Fetch(limit int) ([]events.Event, error) {
 	updates, err := d.tg.Updates(d.offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch events %w", err)
+	}
+
+	if len(updates) == 0 {
+		return nil, nil
 	}
 
 	fetchResult := make([]events.Event, 0, len(updates))
@@ -84,7 +88,7 @@ func toMeta(event events.Event) (Meta, error) {
 }
 
 // func event is used to convert update into event
-func toEvent(upd telegram.Update) events.Event {
+func toEvent(upd telegramclient.Update) events.Event {
 	updType := fetchType(upd)
 
 	res := events.Event{
@@ -102,7 +106,7 @@ func toEvent(upd telegram.Update) events.Event {
 	return res
 }
 
-func fetchText(upd telegram.Update) string {
+func fetchText(upd telegramclient.Update) string {
 	if upd.Message == nil {
 		return ""
 	}
@@ -110,7 +114,7 @@ func fetchText(upd telegram.Update) string {
 	return upd.Message.Text
 }
 
-func fetchType(upd telegram.Update) events.EventType {
+func fetchType(upd telegramclient.Update) events.EventType {
 	if upd.Message == nil {
 		return events.Unknown
 	}
