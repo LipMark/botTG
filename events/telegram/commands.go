@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -37,6 +38,7 @@ func (d *Dispatcher) doCmd(text string, chatID int, username string) error {
 	}
 }
 
+// func savePage is a client cmd to save a given link-article
 func (d *Dispatcher) savePage(chatID int, pageURL string, username string) (err error) {
 	defer func() {
 		if err != nil {
@@ -66,6 +68,39 @@ func (d *Dispatcher) savePage(chatID int, pageURL string, username string) (err 
 	}
 
 	return nil
+}
+
+// func sendRandom is a client cmd to take a random article from storage and remove it afterwards
+func (d *Dispatcher) sendRandom(chatID int, username string) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("can't execute sendRandom command %w", err)
+		}
+	}()
+
+	page, err := d.storage.PickRandom(username)
+	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
+		return err
+	}
+	if errors.Is(err, storage.ErrNoSavedPages) {
+		return d.tg.SendMessage(chatID, msgNoSavedPages)
+	}
+
+	if err := d.tg.SendMessage(chatID, page.URL); err != nil {
+		return err
+	}
+
+	return d.storage.Remove(page)
+}
+
+// func sendHelp is used by user to get a list of bot commands
+func (d *Dispatcher) sendHelp(chatID int) error {
+	return d.tg.SendMessage(chatID, msgHelp)
+}
+
+// func sendHello is used to make a hello-message for user
+func (d *Dispatcher) sendHello(chatID int) error {
+	return d.tg.SendMessage(chatID, msgHello)
 }
 
 // func isAddCmd is an util command to check for AddCmd
