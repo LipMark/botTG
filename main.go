@@ -24,15 +24,17 @@ func init() {
 
 func main() {
 	cfg := config.MustLoad()
+
 	host, exists := os.LookupEnv("TGHOST")
 	if !exists {
 		log.Fatalf("failed to retrieve TG host")
 	}
+
 	storagePath, exists := os.LookupEnv("SQLSTORAGE")
 	if !exists {
 		log.Fatalf("failed to retrieve storage path")
 	}
-	//storage := files.NewPath(storagePath)
+
 	storage, err := sqlite.NewStorage(storagePath)
 	if err != nil {
 		log.Fatal("can't connect to storage %w", err)
@@ -47,7 +49,6 @@ func main() {
 		telegramclient.NewClient(host, cfg.TgBotToken),
 		storage)
 
-	log.Print("service started")
 	consumer := eventconsumer.NewConsumer(eventsDispatcher, eventsDispatcher, 100)
 
 	if err := consumer.Start(); err != nil {
